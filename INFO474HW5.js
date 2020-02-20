@@ -44,12 +44,6 @@
   // make title and axes labels
   function makeLabels() {
     svgContainer.append('text')
-      .attr('x', 100)
-      .attr('y', 40)
-      .style('font-size', '14pt')
-      .text("Countries by Life Expectancy and Fertility Rate");
-
-    svgContainer.append('text')
       .attr('x', 275)
       .attr('y', 490)
       .style('font-size', '10pt')
