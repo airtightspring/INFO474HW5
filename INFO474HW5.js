@@ -3,7 +3,7 @@
 (function() {
 
   let data = "no data";
-  let svgContainer = ""; // keep SVG reference in global scope
+  let svgContainer = ""; 
 
   // load data and make scatter plot after window loads
   window.onload = function() {
@@ -11,14 +11,13 @@
       .append('svg')
       .attr('width', 750)
       .attr('height', 500);
-    // d3.csv is basically fetch but it can be be passed a csv file as a parameter
     d3.csv("gapminder.csv")
       .then((data) => makeScatterPlot(data));
   }
 
-  // make scatter plot with trend line
+  // make scatter plot with tool tips
   function makeScatterPlot(csvData) {
-    data = csvData // assign data as global variable
+    data = csvData 
     const originalData = data;
 
     data = data.filter(d => d['year'] == "1980");
@@ -92,19 +91,10 @@
           div.transition()
             .duration(200)
             .style("opacity", .9);
-          /*if (d3.event.pageY <= 250) {
-            div.html(d.country + "<br/>")
-              .style("left", (d3.event.pageX + 20) + "px")
-              .style("top", (d3.event.pageY + 20) + "px");
-          } else {
-            div.html(d.country + "<br/>")
-              .style("left", (d3.event.pageX + 20) + "px")
-              .style("top", (d3.event.pageY - 100) + "px");
-          }*/
           div.html(d.country + "<br/>")
-            .style("left", (750) + "px")
+            .style("left", (d3.event.pageX + 20) + "px")
             .style("top", (20) + "px");
-
+          // add SVG to tooltip
           let tipSVG = d3.select(".tooltip")
             .append("svg")
             .attr("width", 550)
@@ -112,6 +102,7 @@
 
           let currentCountry = d.country;
 
+          // make line graph within tooltip of population over time for given country
           makeLineGraph(data, tipSVG, originalData, currentCountry);
         })
         .on("mouseout", (d) => {
@@ -119,6 +110,20 @@
             .duration(500)
             .style("opacity", 0);
         });
+
+        // adds labels to certain countries
+        data = data.filter(d => d['population'] >= 100000000);
+        console.log(data);
+        svgContainer.selectAll('.text')
+          .data(data)
+          .enter()
+          .append('text')
+          .attr('x', xMap)
+          .attr('y', yMap)
+          .style('font-size', '10pt')
+          .text(d => d.country)
+          .attr('transform', 'translate(20, 5)');
+
   }
 
   // draw the axes and ticks
@@ -192,15 +197,15 @@
   }
 
 
-  // LINE GRAPH STUFF
-
+  // Section for creating line graph
   function makeLineGraph(csvData, lineSVG, originalData, currentCountry) {
     data = originalData // assign data as global variable
 
+    // filters original data by country and valid population data
     data = data.filter(d => d['country'] == currentCountry);
     data = data.filter(d => d['population'] != "NA");
 
-    // get arrays of fertility rate data and life Expectancy data
+    // get arrays of year and population data
     let year_data = data.map((row) => parseFloat(row["year"]));
     let pop_data = data.map((row) => parseFloat(row["population"]));
 
@@ -238,6 +243,7 @@
       .text('Population');
   }
 
+  // plots line of population over time for given country
   function plotLineData(map, lineSVG, countryData) {
      // d3's line generator
     const line = d3.line()
@@ -297,6 +303,4 @@
       yScale: yScale
     };
   }
-
-
 })();
